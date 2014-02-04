@@ -147,7 +147,7 @@ class Message(Container):
         """
         ## Compare segment_id to the very first string in each segment,
         ## returning all segments that match
-        matches = [segment for segment in self if segment[0][0] == segment_id]
+        matches = [segment for segment in self if segment[0][0][0] == segment_id]
         if len(matches) == 0:
             raise KeyError('No %s segments' % segment_id)
         return matches
@@ -166,6 +166,10 @@ class Field(Container):
     by pipes and separated by carets. It contains a list of strings.
     """
 
+class SubField(Container):
+    """ Forth level of an HL7 Message, that traditionally is surrounded
+        by carets and seperated by tildes. It contains a list of strings.
+    """
 
 def create_parse_plan(strmsg):
     """Creates a plan on how to parse the HL7 message according to
@@ -176,9 +180,9 @@ def create_parse_plan(strmsg):
     ## Parse out the other separators from the characters following
     ## MSH.  Currently we only go two-levels deep and ignore some
     ## details.
-    separators.extend(list(strmsg[3:5]))
+    separators.extend(list(strmsg[3:6]))
     ## The ordered list of containers to create
-    containers = [Message, Segment, Field]
+    containers = [Message, Segment, Field, SubField]
     return _ParsePlan(separators, containers)
 
 
