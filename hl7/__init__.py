@@ -147,7 +147,7 @@ class Message(Container):
         """
         ## Compare segment_id to the very first string in each segment,
         ## returning all segments that match
-        matches = [segment for segment in self if segment[0][0][0] == segment_id]
+        matches = [segment for segment in self if segment[0][0][0][0] == segment_id]
         if len(matches) == 0:
             raise KeyError('No %s segments' % segment_id)
         return matches
@@ -163,12 +163,20 @@ class Segment(Container):
 
 class Field(Container):
     """Third level of an HL7 message, that traditionally is surrounded
-    by pipes and separated by carets. It contains a list of strings.
+    by pipes and separated by carets. It contains a lisit of
+    :py:class:`hl7.Field` instances.
     """
 
 class SubField(Container):
-    """ Forth level of an HL7 Message, that traditionally is surrounded
-        by carets and seperated by tildes. It contains a list of strings.
+    """Forth level of an HL7 message, that traditionally is surrounded
+    by carets and seperated by logic AND sign (&). It contains a list of
+    :py:class:`hl7.Field` instances.
+    """
+
+class Repitition(Container):
+    """Fifth level of an HL7 message, that tradditionally is surrounded
+    by logic AND sign (&) and seperated by tildes. 
+    It contains a list of strings.
     """
 
 def create_parse_plan(strmsg):
@@ -180,9 +188,11 @@ def create_parse_plan(strmsg):
     ## Parse out the other separators from the characters following
     ## MSH.  Currently we only go two-levels deep and ignore some
     ## details.
-    separators.extend(list(strmsg[3:6]))
+    separators.extend(list(strmsg[3:5])) # segment and field delimiter
+    separators.extend(list(strmsg[7:8])) # subfield delimiter
+    separators.extend(list(strmsg[5:6])) # repitition delimiter
     ## The ordered list of containers to create
-    containers = [Message, Segment, Field, SubField]
+    containers = [Message, Segment, Field, SubField, Repitition]
     return _ParsePlan(separators, containers)
 
 
